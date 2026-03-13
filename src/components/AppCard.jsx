@@ -1,4 +1,5 @@
 import EmailGenerator from "./EmailGenerator";
+import MatchScore from "./MatchScore";
 
 function AppCard({ application }) {
   // This function picks the right color for each status
@@ -45,6 +46,10 @@ function AppCard({ application }) {
       {/* AI Email Generator */}
       <div className="mt-3 pt-3 border-t border-gray-50">
         <EmailGenerator company={application.company} role={application.role} />
+      </div>
+
+      <div className="mt-2">
+        <MatchScore company={application.company} role={application.role} />
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ function App() {
 
       {/* Header */}
       <h1 className='text-3xl font-bold text-gray-800 mb-2'>
-        My Co-op Applications
+        My Job Applications
       </h1>
       <p className='text-gray-400 mb-8'>Track your co-op journey</p>
 

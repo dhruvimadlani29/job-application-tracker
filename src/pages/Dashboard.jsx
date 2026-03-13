@@ -16,12 +16,12 @@ function Dashboard() {
     ]
   })
 
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
+  const [showForm, setShowForm]     = useState(false)
+  const [editingId, setEditingId]   = useState(null)  // tracks which app is being edited
+  const [formData, setFormData]     = useState({
     company: '', role: '', status: 'Applied', dateApplied: ''
   })
 
-  // Auto-save to localStorage every time applications changes
   useEffect(() => {
     localStorage.setItem('coopApplications', JSON.stringify(applications))
   }, [applications])
@@ -30,25 +30,61 @@ function Dashboard() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // Opens a blank form for adding
+  function handleAddNew() {
+    setEditingId(null)
+    setFormData({ company: '', role: '', status: 'Applied', dateApplied: '' })
+    setShowForm(true)
+  }
+
+  // Opens form pre-filled with existing application data
+ function handleEdit(id, formData) {
+  setApplications(applications.map(app =>
+    app.id === id
+      ? { ...app, ...formData }
+      : app
+  ))
+}
+
   function handleSubmit() {
     if (!formData.company || !formData.role) {
       alert('Please fill in Company and Role!')
       return
     }
-    const newApp = {
-      id: Date.now(),
-      company: formData.company,
-      role: formData.role,
-      status: formData.status,
-      dateApplied: formData.dateApplied || 'Today'
+
+    if (editingId) {
+      // EDIT MODE — update the existing application
+      setApplications(applications.map(app =>
+        app.id === editingId
+          ? { ...app, ...formData }  // merge new formData into existing app
+          : app                       // leave others unchanged
+      ))
+    } else {
+      // ADD MODE — create a brand new application
+      const newApp = {
+        id: Date.now(),
+        company:     formData.company,
+        role:        formData.role,
+        status:      formData.status,
+        dateApplied: formData.dateApplied || 'Today'
+      }
+      setApplications([...applications, newApp])
     }
-    setApplications([...applications, newApp])
+
+    // Reset everything
     setFormData({ company: '', role: '', status: 'Applied', dateApplied: '' })
+    setEditingId(null)
     setShowForm(false)
   }
 
   function handleDelete(id) {
     setApplications(applications.filter(app => app.id !== id))
+  }
+
+  function handleCancel() {
+    setShowForm(false)
+    setEditingId(null)
+    setFormData({ company: '', role: '', status: 'Applied', dateApplied: '' })
   }
 
   const totalApplied   = applications.length
@@ -62,15 +98,13 @@ function Dashboard() {
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Total Applied',  value: totalApplied,   color: 'text-blue-600'   },
-          { label: 'Interviews',     value: totalInterview, color: 'text-purple-600' },
-          { label: 'Offers',         value: totalOffer,     color: 'text-green-600'  },
-          { label: 'Rejected',       value: totalRejected,  color: 'text-red-400'    },
+          { label:'Total Applied',  value: totalApplied,   color:'text-blue-600'   },
+          { label:'Interviews',     value: totalInterview, color:'text-purple-600' },
+          { label:'Offers',         value: totalOffer,     color:'text-green-600'  },
+          { label:'Rejected',       value: totalRejected,  color:'text-red-400'    },
         ].map(stat => (
           <div key={stat.label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
-              {stat.label}
-            </p>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">{stat.label}</p>
             <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
@@ -79,17 +113,22 @@ function Dashboard() {
       {/* Add Button */}
       <div className="flex justify-end mb-4">
         <button
-          onClick={() => setShowForm(true)}
+          onClick={handleAddNew}
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl transition-colors text-sm"
         >
           + Add Application
         </button>
       </div>
 
-      {/* Add Application Form */}
+      {/* Add / Edit Form */}
       {showForm && (
         <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6 mb-6">
-          <h2 className="text-base font-bold text-gray-800 mb-4">➕ New Application</h2>
+
+          {/* Form title changes based on mode */}
+          <h2 className="text-base font-bold text-gray-800 mb-4">
+            {editingId ? '✏️ Edit Application' : '➕ New Application'}
+          </h2>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Company Name *</label>
@@ -128,23 +167,30 @@ function Dashboard() {
               />
             </div>
           </div>
+
           <div className="flex gap-3 mt-5">
             <button onClick={handleSubmit}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
-              Save Application
+              {editingId ? 'Save Changes' : 'Save Application'}
             </button>
-            <button onClick={() => setShowForm(false)}
+            <button onClick={handleCancel}
               className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
               Cancel
             </button>
           </div>
+
         </div>
       )}
 
       {/* Application Cards */}
       <div className="flex flex-col gap-4">
         {applications.map(app => (
-          <AppCard key={app.id} application={app} onDelete={handleDelete} />
+          <AppCard
+            key={app.id}
+            application={app}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
         ))}
       </div>
 

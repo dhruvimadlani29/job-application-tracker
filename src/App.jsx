@@ -1,201 +1,100 @@
 // src/App.jsx
 import { useState } from 'react'
-import AppCard from './components/AppCard'
+import Dashboard  from './pages/Dashboard'
+import AITools    from './pages/AITools'
+import Resumes    from './pages/Resumes'
+import Analytics  from './pages/Analytics'
+import Settings   from './pages/Settings'
 
 function App() {
 
-  // useState stores your list of applications
-  // Starting with the 3 fake ones — we will remove these later
-  const [applications, setApplications] = useState([
-    { id: 1, company: 'Shopify', role: 'Frontend Developer Co-op',
-      status: 'Applied', dateApplied: 'Feb 22, 2026' },
-    { id: 2, company: 'Klarna', role: 'Backend Developer Co-op',
-      status: 'Interview', dateApplied: 'Mar 1, 2026' },
-    { id: 3, company: 'TD Bank', role: 'Full Stack Developer Co-op',
-      status: 'Applied', dateApplied: 'Feb 28, 2026' },
-  ])
+  const [activePage, setActivePage] = useState('dashboard')
 
-  // This controls whether the Add form is visible or hidden
-  const [showForm, setShowForm] = useState(false)
+  const navItems = [
+    { id:'dashboard', icon:'📋', label:'Applications' },
+    { id:'aitools',   icon:'🤖', label:'AI Tools'     },
+    { id:'resumes',   icon:'📄', label:'Resumes'       },
+    { id:'stats',     icon:'📊', label:'Analytics'     },
+    { id:'settings',  icon:'⚙️', label:'Settings'      },
+  ]
 
-  // This stores what the user is typing in the form
-  const [formData, setFormData] = useState({
-    company: '',
-    role: '',
-    status: 'Applied',
-    dateApplied: ''
-  })
-
-  // This runs every time user types in any input field
-  function handleChange(e) {
-    setFormData({
-      ...formData,           // keep all existing values
-      [e.target.name]: e.target.value  // update only the field that changed
-    })
-  }
-
-  // This runs when user clicks Save
-  function handleSubmit() {
-
-    // Basic check — don't save if company or role is empty
-    if (!formData.company || !formData.role) {
-      alert('Please fill in Company and Role!')
-      return
-    }
-
-    // Create a new application object
-    const newApp = {
-      id: Date.now(),   // Date.now() gives a unique number like 1741836000000
-      company: formData.company,
-      role: formData.role,
-      status: formData.status,
-      dateApplied: formData.dateApplied || 'Today'
-    }
-
-    // Add it to the list
-    setApplications([...applications, newApp])
-
-    // Reset the form back to empty
-    setFormData({ company: '', role: '', status: 'Applied', dateApplied: '' })
-
-    // Hide the form
-    setShowForm(false)
+  const pageTitles = {
+    dashboard: 'My Applications',
+    aitools:   'AI Tools',
+    resumes:   'My Resumes',
+    stats:     'Analytics',
+    settings:  'Settings',
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
 
-      {/* ── TOP HEADER BAR ── */}
-      <div className="bg-white border-b border-gray-100 px-8 py-5 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">🎯 My Co-op Applications</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Track your co-op journey</p>
-        </div>
+      {/* ── SIDEBAR ── */}
+      <div className="w-56 bg-white border-r border-gray-100 flex flex-col fixed h-full z-20">
 
-        {/* Add Application Button */}
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
-        >
-          + Add Application
-        </button>
-      </div>
-
-      {/* ── STATS ROW ── */}
-      <div className="px-8 py-6 grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-400 font-medium">Total Applied</p>
-          <p className="text-3xl font-bold text-blue-600 mt-1">{applications.length}</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-400 font-medium">Interviews</p>
-          <p className="text-3xl font-bold text-purple-600 mt-1">
-            {applications.filter(a => a.status === 'Interview').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-400 font-medium">Offers</p>
-          <p className="text-3xl font-bold text-green-600 mt-1">
-            {applications.filter(a => a.status === 'Offer').length}
-          </p>
-        </div>
-      </div>
-
-      {/* ── ADD APPLICATION FORM (only shows when showForm is true) ── */}
-      {showForm && (
-        <div className="px-8 mb-6">
-          <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">➕ Add New Application</h2>
-
-            <div className="grid grid-cols-2 gap-4">
-
-              {/* Company Name */}
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Company Name *
-                </label>
-                <input
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  placeholder="e.g. Shopify"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors"
-                />
-              </div>
-
-              {/* Job Title */}
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Job Title *
-                </label>
-                <input
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  placeholder="e.g. Frontend Developer Co-op"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors"
-                />
-              </div>
-
-              {/* Status Dropdown */}
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors bg-white"
-                >
-                  <option>Applied</option>
-                  <option>Interview</option>
-                  <option>Offer</option>
-                  <option>Rejected</option>
-                </select>
-              </div>
-
-              {/* Date Applied */}
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                  Date Applied
-                </label>
-                <input
-                  name="dateApplied"
-                  value={formData.dateApplied}
-                  onChange={handleChange}
-                  type="date"
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors"
-                />
-              </div>
-
+        {/* Logo */}
+        <div className="px-5 py-5 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg">
+              🎯
             </div>
-
-            {/* Form Buttons */}
-            <div className="flex gap-3 mt-5">
-              <button
-                onClick={handleSubmit}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
-              >
-                Save Application
-              </button>
-              <button
-                onClick={() => setShowForm(false)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-
+            <span className="font-bold text-gray-800">CoopTracker</span>
           </div>
         </div>
-      )}
 
-      {/* ── APPLICATION CARDS LIST ── */}
-      <div className="px-8 pb-8 flex flex-col gap-4">
-        {applications.map(app => (
-          <AppCard key={app.id} application={app} />
-        ))}
+        {/* Nav Links */}
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-1">
+            Menu
+          </p>
+          {navItems.map(item => (
+            <button
+              key={item.id}
+              onClick={() => setActivePage(item.id)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left w-full
+                ${activePage === item.id
+                  ? 'bg-blue-50 text-blue-600 font-semibold'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+            >
+              <span>{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* User Info */}
+        <div className="px-4 py-4 border-t border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              D
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-semibold text-gray-800 truncate">Dhruvi Madlani</p>
+              <p className="text-xs text-gray-400 truncate">Algonquin College</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── MAIN AREA ── */}
+      <div className="ml-56 flex-1 flex flex-col">
+
+        {/* Top Bar */}
+        <div className="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-10">
+          <h1 className="text-xl font-bold text-gray-800">{pageTitles[activePage]}</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Friday, March 13, 2026</p>
+        </div>
+
+        {/* Page Content */}
+        <div className="flex-1 p-8">
+          {activePage === 'dashboard' && <Dashboard />}
+          {activePage === 'aitools'   && <AITools />}
+          {activePage === 'resumes'   && <Resumes />}
+          {activePage === 'stats'     && <Analytics applications={[]} />}
+          {activePage === 'settings'  && <Settings />}
+        </div>
+
       </div>
 
     </div>

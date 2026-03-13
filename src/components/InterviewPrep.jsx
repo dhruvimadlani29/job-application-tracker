@@ -1,29 +1,32 @@
 // src/components/InterviewPrep.jsx
-import { useState } from 'react'
+import { useState } from "react";
 
 function InterviewPrep({ company, role }) {
-  const [questions, setQuestions] = useState('')
-  const [loading, setLoading]     = useState(false)
-  const [show, setShow]           = useState(false)
+  const [questions, setQuestions] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [show, setShow] = useState(false);
 
   async function generateQuestions() {
-    setShow(true)
-    setLoading(true)
-    setQuestions('')
+    setShow(true);
+    setLoading(true);
+    setQuestions("");
 
     try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_tokens: 500,
-          messages: [{
-            role: 'user',
-            content: `Generate interview preparation questions for a co-op student.
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            max_tokens: 500,
+            messages: [
+              {
+                role: "user",
+                content: `Generate interview preparation questions for a co-op student.
                       Company: ${company}
                       Role: ${role}
                       
@@ -34,67 +37,75 @@ function InterviewPrep({ company, role }) {
                       - 1 Question about the student's goals and why co-op
 
                       After each question add a short tip in brackets on how to answer it.
-                      Keep the whole response under 250 words.`
-          }]
-        })
-      })
+                      Keep the whole response under 250 words.`,
+              },
+            ],
+          }),
+        },
+      );
 
       if (!response.ok) {
-        const err = await response.json()
-        setQuestions(`Error: ${err.error?.message || 'Something went wrong'}`)
-        setLoading(false)
-        return
+        const err = await response.json();
+        setQuestions(`Error: ${err.error?.message || "Something went wrong"}`);
+        setLoading(false);
+        return;
       }
 
-      const data = await response.json()
-      setQuestions(data.choices[0].message.content)
-
+      const data = await response.json();
+      setQuestions(data.choices[0].message.content);
     } catch (err) {
-      setQuestions('Network error — check your internet connection.')
+      setQuestions("Network error — check your internet connection.");
     }
 
-    setLoading(false)
+    setLoading(false);
   }
 
   return (
-    <div className="mt-2">
-
-      {/* Button */}
+    <div className="relative">
+      {/* Button — never moves */}
       <button
         onClick={generateQuestions}
-        className="bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+        className="bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold text-xs px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
       >
-        🎤 {show && questions ? 'Regenerate Questions' : 'Prep Interview Questions'}
+        🎤 Prep Interview Questions
       </button>
 
-      {/* Questions Panel */}
+      {/* Panel */}
       {show && (
-        <div className="mt-3 bg-orange-50 border border-orange-100 rounded-xl p-4">
+        <div className="absolute left-0 top-10 z-10 w-96 bg-white border border-orange-100 rounded-xl shadow-lg p-4">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs font-bold text-orange-600 uppercase tracking-wide">
+              🎤 Interview Prep — {company}
+            </p>
+            <button
+              onClick={() => {
+                setShow(false);
+                setQuestions("");
+              }}
+              className="text-gray-300 hover:text-gray-600 text-lg font-bold leading-none transition-colors"
+            >
+              ✕
+            </button>
+          </div>
 
-          <p className="text-xs font-bold text-orange-600 uppercase tracking-wide mb-3">
-            🎤 Interview Prep — {company}
-          </p>
-
-          {/* Loading */}
           {loading && (
             <div className="flex items-center gap-2 text-orange-600 text-sm">
-              <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin"/>
-              AI is generating your interview questions...
+              <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
+              Generating your interview questions...
             </div>
           )}
 
-          {/* Questions Result */}
           {!loading && questions && (
-            <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
-              {questions}
-            </pre>
+            <div className="max-h-72 overflow-y-auto">
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">
+                {questions}
+              </pre>
+            </div>
           )}
-
         </div>
       )}
-
     </div>
-  )
+  );
 }
 
-export default InterviewPrep
+export default InterviewPrep;

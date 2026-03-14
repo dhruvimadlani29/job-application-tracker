@@ -118,51 +118,61 @@ function Dashboard({ statuses, thresholds }) {
       color: "text-blue-500",
       bg: "bg-white",
       border: "border-blue-200",
+      dot: "bg-blue-500",
     },
     "Under Review": {
       color: "text-sky-600",
       bg: "bg-white",
       border: "border-sky-200",
+      dot: "bg-sky-600",
     },
     "Phone Screen": {
       color: "text-purple-600",
       bg: "bg-white",
       border: "border-purple-200",
+      dot: "bg-purple-600",
     },
     "Technical Test": {
       color: "text-amber-600",
       bg: "bg-white",
       border: "border-amber-200",
+      dot: "bg-amber-600",
     },
     Interview: {
       color: "text-orange-600",
       bg: "bg-white",
       border: "border-orange-200",
+      dot: "bg-orange-600",
     },
     "Awaiting Decision": {
       color: "text-indigo-600",
       bg: "bg-white",
       border: "border-indigo-200",
+      dot: "bg-indigo-600",
     },
     "Follow-Up Sent": {
       color: "text-cyan-600",
       bg: "bg-white",
       border: "border-cyan-200",
+      dot: "bg-cyan-600",
     },
     "Offer Received": {
       color: "text-green-600",
       bg: "bg-white",
       border: "border-green-200",
+      dot: "bg-green-600",
     },
     Rejected: {
       color: "text-red-500",
       bg: "bg-white",
       border: "border-red-200",
+      dot: "bg-red-500",
     },
     Ghosted: {
       color: "text-gray-400",
       bg: "bg-white",
       border: "border-gray-200",
+      dot: "bg-gray-400",
     },
   };
 
@@ -173,6 +183,7 @@ function Dashboard({ statuses, thresholds }) {
       color: "text-blue-600",
       bg: "bg-blue-50",
       border: "border-blue-200",
+      dot: "bg-blue-600",
     },
     ...enabledStatuses.map((status) => ({
       label: status,
@@ -181,6 +192,7 @@ function Dashboard({ statuses, thresholds }) {
         color: "text-gray-600",
         bg: "bg-white",
         border: "border-gray-200",
+        dot: "bg-gray-600",
       }),
     })),
   ];
@@ -229,10 +241,9 @@ function Dashboard({ statuses, thresholds }) {
               </p>
 
               {/* Active indicator dot */}
+              {/* Active indicator dot */}
               {isActive && (
-                <div
-                  className={`w-1.5 h-1.5 rounded-full mt-2 ${stat.color.replace("text", "bg")}`}
-                />
+                <div className={`w-1.5 h-1.5 rounded-full mt-2 ${stat.dot}`} />
               )}
             </div>
           );

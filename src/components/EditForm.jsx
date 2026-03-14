@@ -3,6 +3,12 @@ import { useState } from "react";
 import { getEnabledStatuses } from "../utils/thresholds";
 
 function EditForm({ application, onSave, enabledStatuses }) {
+  const availableResumes = JSON.parse(
+    localStorage.getItem("coopResumes") || "[]",
+  );
+  const availableCoverLetters = JSON.parse(
+    localStorage.getItem("coopCoverLetters") || "[]",
+  );
   const [show, setShow] = useState(false);
   const [formData, setFormData] = useState({
     company: application.company,
@@ -10,6 +16,8 @@ function EditForm({ application, onSave, enabledStatuses }) {
     status: application.status,
     dateApplied: application.dateApplied,
     notes: application.notes || "",
+    resumeUsed: application.resumeUsed || "",
+    coverLetterUsed: application.coverLetterUsed || "",
   });
 
   function handleChange(e) {
@@ -123,6 +131,43 @@ function EditForm({ application, onSave, enabledStatuses }) {
                   rows={3}
                   className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors resize-none"
                 />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                  Resume Used
+                </label>
+                <select
+                  name="resumeUsed"
+                  value={formData.resumeUsed}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 bg-white transition-colors"
+                >
+                  <option value="">— None selected —</option>
+                  {availableResumes.map((r) => (
+                    <option key={r.id} value={r.name}>
+                      {r.name} {r.isDefault ? "⭐" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                  Cover Letter Used
+                </label>
+                <select
+                  name="coverLetterUsed"
+                  value={formData.coverLetterUsed}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 bg-white transition-colors"
+                >
+                  <option value="">— None selected —</option>
+                  {availableCoverLetters.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name} {c.isDefault ? "⭐" : ""}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

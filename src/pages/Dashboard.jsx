@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
 import AppCard from "../components/AppCard";
 import WeeklySummary from "../components/WeeklySummary";
@@ -42,7 +41,16 @@ function Dashboard({ statuses, thresholds }) {
     role: "",
     status: "Applied",
     dateApplied: "",
+    resumeUsed: "",
+    coverLetterUsed: "",
   });
+  // Read resumes and cover letters from localStorage
+  const [availableResumes] = useState(() =>
+    JSON.parse(localStorage.getItem("coopResumes") || "[]"),
+  );
+  const [availableCoverLetters] = useState(() =>
+    JSON.parse(localStorage.getItem("coopCoverLetters") || "[]"),
+  );
 
   useEffect(() => {
     localStorage.setItem("coopApplications", JSON.stringify(applications));
@@ -91,10 +99,19 @@ function Dashboard({ statuses, thresholds }) {
           role: formData.role,
           status: formData.status,
           dateApplied: formData.dateApplied || "Today",
+          resumeUsed: formData.resumeUsed || "",
+          coverLetterUsed: formData.coverLetterUsed || "",
         },
       ]);
     }
-    setFormData({ company: "", role: "", status: "Applied", dateApplied: "" });
+    setFormData({
+      company: "",
+      role: "",
+      status: "Applied",
+      dateApplied: "",
+      resumeUsed: "",
+      coverLetterUsed: "",
+    });
     setEditingId(null);
     setShowForm(false);
   }
@@ -106,7 +123,14 @@ function Dashboard({ statuses, thresholds }) {
   function handleCancel() {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ company: "", role: "", status: "Applied", dateApplied: "" });
+    setFormData({
+      company: "",
+      role: "",
+      status: "Applied",
+      dateApplied: "",
+      resumeUsed: "",
+      coverLetterUsed: "",
+    });
   }
 
   // ── stat boxes — only show enabled statuses ──
@@ -351,6 +375,43 @@ function Dashboard({ statuses, thresholds }) {
                 type="date"
                 className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors"
               />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                Resume Used
+              </label>
+              <select
+                name="resumeUsed"
+                value={formData.resumeUsed}
+                onChange={handleChange}
+                className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 bg-white transition-colors"
+              >
+                <option value="">— None selected —</option>
+                {availableResumes.map((r) => (
+                  <option key={r.id} value={r.name}>
+                    {r.name} {r.isDefault ? "⭐" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                Cover Letter Used
+              </label>
+              <select
+                name="coverLetterUsed"
+                value={formData.coverLetterUsed}
+                onChange={handleChange}
+                className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 bg-white transition-colors"
+              >
+                <option value="">— None selected —</option>
+                {availableCoverLetters.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name} {c.isDefault ? "⭐" : ""}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="flex gap-3 mt-5">

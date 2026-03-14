@@ -102,6 +102,22 @@ function AppCard({ application, onDelete, onEdit, enabledStatuses }) {
         </div>
       )}
 
+      {/* Resume + Cover Letter used */}
+{(application.resumeUsed || application.coverLetterUsed) && (
+  <div className="mt-2 flex flex-wrap gap-2">
+    {application.resumeUsed && (
+      <span className="inline-flex items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 text-xs font-semibold px-3 py-1 rounded-full">
+        📄 {application.resumeUsed}
+      </span>
+    )}
+    {application.coverLetterUsed && (
+      <span className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full">
+        ✉️ {application.coverLetterUsed}
+      </span>
+    )}
+  </div>
+)}
+
       {/* AI Buttons row — all 3 stay fixed, panels open as dropdowns */}
       <div className="mt-3 pt-3 border-t border-gray-50 flex flex-wrap gap-2">
         <EmailGenerator

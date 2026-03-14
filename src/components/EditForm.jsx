@@ -1,30 +1,32 @@
-import { useState } from 'react'
+// src/components/EditForm.jsx
+import { useState } from "react";
+import { getEnabledStatuses } from "../utils/thresholds";
 
-function EditForm({ application, onSave }) {
-  const [show, setShow] = useState(false)
+function EditForm({ application, onSave, enabledStatuses }) {
+  const [show, setShow] = useState(false);
   const [formData, setFormData] = useState({
-    company:     application.company,
-    role:        application.role,
-    status:      application.status,
-    dateApplied: application.dateApplied
-  })
+    company: application.company,
+    role: application.role,
+    status: application.status,
+    dateApplied: application.dateApplied,
+    notes: application.notes || "",
+  });
 
   function handleChange(e) {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
   function handleSave() {
     if (!formData.company || !formData.role) {
-      alert('Company and Role cannot be empty!')
-      return
+      alert("Company and Role cannot be empty!");
+      return;
     }
-    onSave(application.id, formData)
-    setShow(false)
+    onSave(application.id, formData);
+    setShow(false);
   }
 
   return (
     <>
-      {/* Edit Button — stays on card, never moves */}
       <button
         onClick={() => setShow(true)}
         className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:text-blue-400 hover:bg-blue-50 transition-all"
@@ -33,39 +35,28 @@ function EditForm({ application, onSave }) {
         ✏️
       </button>
 
-      {/* 
-        MODAL OVERLAY — covers entire screen
-        fixed = stays in place even when scrolled
-        inset-0 = covers top, right, bottom, left completely
-        z-50 = appears above everything else
-      */}
       {show && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
           onClick={(e) => {
-            // Close if user clicks the dark background
-            if (e.target === e.currentTarget) setShow(false)
+            if (e.target === e.currentTarget) setShow(false);
           }}
         >
-
-          {/* Modal Box — always centered */}
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-96 mx-4">
-
-            {/* Header */}
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-96 mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <p className="text-base font-bold text-gray-800">✏️ Edit Application</p>
+              <p className="text-base font-bold text-gray-800">
+                ✏️ Edit Application
+              </p>
               <button
                 onClick={() => setShow(false)}
-                className="text-gray-300 hover:text-gray-600 text-xl font-bold leading-none transition-colors"
+                className="text-gray-300 hover:text-gray-600 text-xl font-bold leading-none"
               >
                 ✕
               </button>
             </div>
 
-            {/* Form Fields */}
             <div className="flex flex-col gap-3">
-
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
                   Company Name
@@ -100,10 +91,9 @@ function EditForm({ application, onSave }) {
                   onChange={handleChange}
                   className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 bg-white transition-colors"
                 >
-                  <option>Applied</option>
-                  <option>Interview</option>
-                  <option>Offer</option>
-                  <option>Rejected</option>
+                  {(enabledStatuses || []).map((status) => (
+                    <option key={status}>{status}</option>
+                  ))}
                 </select>
               </div>
 
@@ -120,9 +110,22 @@ function EditForm({ application, onSave }) {
                 />
               </div>
 
+              {/* Notes field — new! */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                  Notes
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder="e.g. Referral from John, HR contact is Sarah, coding test required..."
+                  rows={3}
+                  className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-colors resize-none"
+                />
+              </div>
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-2 mt-5">
               <button
                 onClick={handleSave}
@@ -137,12 +140,11 @@ function EditForm({ application, onSave }) {
                 Cancel
               </button>
             </div>
-
           </div>
         </div>
       )}
     </>
-  )
+  );
 }
 
-export default EditForm
+export default EditForm;

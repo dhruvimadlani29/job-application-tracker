@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import AppCard from "../components/AppCard";
 import WeeklySummary from "../components/WeeklySummary";
 
-function Dashboard() {
+function Dashboard({ statuses, thresholds }) {
   const [applications, setApplications] = useState(() => {
     const saved = localStorage.getItem("coopApplications");
     return saved
@@ -44,27 +44,16 @@ function Dashboard() {
     dateApplied: "",
   });
 
-  // Auto save to localStorage every time applications changes
   useEffect(() => {
     localStorage.setItem("coopApplications", JSON.stringify(applications));
   }, [applications]);
 
-  // Filter + Search logic
+  // ── filtered list ──
   const filteredApplications = applications
     .filter((app) => filterStatus === "All" || app.status === filterStatus)
     .filter((app) =>
       app.company.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-
-  // Count helpers for stats and filter chips
-  const totalApplied = applications.length;
-  const totalInterview = applications.filter(
-    (a) => a.status === "Interview",
-  ).length;
-  const totalOffer = applications.filter((a) => a.status === "Offer").length;
-  const totalRejected = applications.filter(
-    (a) => a.status === "Rejected",
-  ).length;
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -76,11 +65,9 @@ function Dashboard() {
     setShowForm(true);
   }
 
-  function handleEdit(id, formData) {
+  function handleEdit(id, data) {
     setApplications(
-      applications.map((app) =>
-        app.id === id ? { ...app, ...formData } : app,
-      ),
+      applications.map((app) => (app.id === id ? { ...app, ...data } : app)),
     );
   }
 
@@ -89,7 +76,6 @@ function Dashboard() {
       alert("Please fill in Company and Role!");
       return;
     }
-
     if (editingId) {
       setApplications(
         applications.map((app) =>
@@ -97,16 +83,17 @@ function Dashboard() {
         ),
       );
     } else {
-      const newApp = {
-        id: Date.now(),
-        company: formData.company,
-        role: formData.role,
-        status: formData.status,
-        dateApplied: formData.dateApplied || "Today",
-      };
-      setApplications([...applications, newApp]);
+      setApplications([
+        ...applications,
+        {
+          id: Date.now(),
+          company: formData.company,
+          role: formData.role,
+          status: formData.status,
+          dateApplied: formData.dateApplied || "Today",
+        },
+      ]);
     }
-
     setFormData({ company: "", role: "", status: "Applied", dateApplied: "" });
     setEditingId(null);
     setShowForm(false);
@@ -122,67 +109,161 @@ function Dashboard() {
     setFormData({ company: "", role: "", status: "Applied", dateApplied: "" });
   }
 
+  // ── stat boxes — only show enabled statuses ──
+  // Only show enabled statuses — reads live from App.jsx state
+  const enabledStatuses = statuses.filter((s) => s.enabled).map((s) => s.key);
+
+  const colorMap = {
+    Applied: {
+      color: "text-blue-500",
+      bg: "bg-white",
+      border: "border-blue-200",
+    },
+    "Under Review": {
+      color: "text-sky-600",
+      bg: "bg-white",
+      border: "border-sky-200",
+    },
+    "Phone Screen": {
+      color: "text-purple-600",
+      bg: "bg-white",
+      border: "border-purple-200",
+    },
+    "Technical Test": {
+      color: "text-amber-600",
+      bg: "bg-white",
+      border: "border-amber-200",
+    },
+    Interview: {
+      color: "text-orange-600",
+      bg: "bg-white",
+      border: "border-orange-200",
+    },
+    "Awaiting Decision": {
+      color: "text-indigo-600",
+      bg: "bg-white",
+      border: "border-indigo-200",
+    },
+    "Follow-Up Sent": {
+      color: "text-cyan-600",
+      bg: "bg-white",
+      border: "border-cyan-200",
+    },
+    "Offer Received": {
+      color: "text-green-600",
+      bg: "bg-white",
+      border: "border-green-200",
+    },
+    Rejected: {
+      color: "text-red-500",
+      bg: "bg-white",
+      border: "border-red-200",
+    },
+    Ghosted: {
+      color: "text-gray-400",
+      bg: "bg-white",
+      border: "border-gray-200",
+    },
+  };
+
+  const statBoxes = [
+    {
+      label: "Total",
+      key: "All",
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+    },
+    ...enabledStatuses.map((status) => ({
+      label: status,
+      key: status,
+      ...(colorMap[status] || {
+        color: "text-gray-600",
+        bg: "bg-white",
+        border: "border-gray-200",
+      }),
+    })),
+  ];
+
+  const counts = {
+    All: applications.length,
+    ...enabledStatuses.reduce((acc, status) => {
+      acc[status] = applications.filter((a) => a.status === status).length;
+      return acc;
+    }, {}),
+  };
+
   return (
     <div>
-      {/* ── STATS ROW ── */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        {[
-          {
-            label: "Total Applied",
-            value: totalApplied,
-            color: "text-blue-600",
-          },
-          {
-            label: "Interviews",
-            value: totalInterview,
-            color: "text-purple-600",
-          },
-          { label: "Offers", value: totalOffer, color: "text-green-600" },
-          { label: "Rejected", value: totalRejected, color: "text-red-400" },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"
-          >
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
-              {stat.label}
-            </p>
-            <p className={`text-3xl font-bold mt-1 ${stat.color}`}>
-              {stat.value}
-            </p>
-          </div>
-        ))}
-      </div>
       {/* ── AI WEEKLY SUMMARY ── */}
       <WeeklySummary applications={applications} />
-      {/* ── FILTER + SEARCH + ADD ROW ── */}
-      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-        {/* Filter Chips */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {["All", "Applied", "Interview", "Offer", "Rejected"].map(
-            (status) => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all
+
+      {/* ── STAT BOXES — click to filter ── */}
+      <div className="grid grid-cols-3 gap-3 mb-8 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
+        {statBoxes.map((stat) => {
+          const isActive = filterStatus === stat.key;
+          return (
+            <div
+              key={stat.key}
+              onClick={() =>
+                setFilterStatus(
+                  // clicking active box resets to All
+                  filterStatus === stat.key ? "All" : stat.key,
+                )
+              }
+              className={`
+                rounded-2xl p-4 border-2 cursor-pointer transition-all duration-150
+                hover:shadow-md hover:-translate-y-0.5
                 ${
-                  filterStatus === status
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"
-                }`}
+                  isActive
+                    ? `${stat.bg} ${stat.border} shadow-sm`
+                    : "bg-white border-gray-100 hover:border-gray-200"
+                }
+              `}
+            >
+              <p className="text-xs text-gray-400 font-semibold truncate">
+                {stat.label}
+              </p>
+              <p className={`text-2xl font-bold mt-1 ${stat.color}`}>
+                {counts[stat.key]}
+              </p>
+
+              {/* Active indicator dot */}
+              {isActive && (
+                <div
+                  className={`w-1.5 h-1.5 rounded-full mt-2 ${stat.color.replace("text", "bg")}`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── ACTIVE FILTER LABEL + SEARCH + ADD ── */}
+      <div className="flex items-center justify-between mb-4 gap-4">
+        {/* Active filter label */}
+        <div className="flex items-center gap-2">
+          {filterStatus !== "All" && (
+            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5">
+              <span className="text-xs font-semibold text-blue-700">
+                Filtering: {filterStatus}
+              </span>
+              <button
+                onClick={() => setFilterStatus("All")}
+                className="text-blue-400 hover:text-blue-700 font-bold text-sm leading-none"
               >
-                {status}
-                <span className="ml-1.5 opacity-70">
-                  {status === "All"
-                    ? applications.length
-                    : applications.filter((a) => a.status === status).length}
-                </span>
+                ✕
               </button>
-            ),
+            </div>
+          )}
+          {filterStatus === "All" && (
+            <p className="text-sm text-gray-400">
+              Showing all {counts.All} applications
+            </p>
           )}
         </div>
 
-        {/* Search + Add Button */}
+        {/* Search + Add */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <input
             type="text"
@@ -241,10 +322,11 @@ function Dashboard() {
                 onChange={handleChange}
                 className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 bg-white transition-colors"
               >
-                <option>Applied</option>
-                <option>Interview</option>
-                <option>Offer</option>
-                <option>Rejected</option>
+                {statuses
+                  .filter((s) => s.enabled)
+                  .map((s) => (
+                    <option key={s.key}>{s.key}</option>
+                  ))}
               </select>
             </div>
             <div>
@@ -280,12 +362,22 @@ function Dashboard() {
       {/* ── APPLICATION CARDS ── */}
       <div className="flex flex-col gap-4">
         {filteredApplications.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <div className="text-4xl mb-3">🔍</div>
-            <p className="font-semibold">No applications found</p>
+          <div className="text-center py-16 text-gray-400">
+            <div className="text-5xl mb-3">🔍</div>
+            <p className="font-semibold text-gray-500">No applications found</p>
             <p className="text-sm mt-1">
-              Try a different filter or search term
+              {filterStatus !== "All"
+                ? `No applications with status "${filterStatus}"`
+                : "Add your first application using the button above"}
             </p>
+            {filterStatus !== "All" && (
+              <button
+                onClick={() => setFilterStatus("All")}
+                className="mt-4 text-xs font-semibold text-blue-500 hover:text-blue-700 underline"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
         ) : (
           filteredApplications.map((app) => (
@@ -294,6 +386,7 @@ function Dashboard() {
               application={app}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              enabledStatuses={enabledStatuses}
             />
           ))
         )}

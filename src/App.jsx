@@ -1,14 +1,27 @@
 // src/App.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Dashboard  from './pages/Dashboard'
 import AITools    from './pages/AITools'
 import Resumes    from './pages/Resumes'
 import Analytics  from './pages/Analytics'
 import Settings   from './pages/Settings'
+import { getStatuses, getThresholds, saveStatuses, saveThresholds } from './utils/thresholds'
 
 function App() {
 
   const [activePage, setActivePage] = useState('dashboard')
+  const [statuses, setStatuses]     = useState(getStatuses)    // reads from localStorage on startup
+  const [thresholds, setThresholds] = useState(getThresholds)  // reads from localStorage on startup
+
+  // ── Auto save to localStorage whenever statuses changes ──
+  useEffect(() => {
+    saveStatuses(statuses)
+  }, [statuses])
+
+  // ── Auto save to localStorage whenever thresholds changes ──
+  useEffect(() => {
+    saveThresholds(thresholds)
+  }, [thresholds])
 
   const navItems = [
     { id:'dashboard', icon:'📋', label:'Applications' },
@@ -42,7 +55,7 @@ function App() {
           </div>
         </div>
 
-        {/* Nav Links */}
+        {/* Nav */}
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-1">
             Menu
@@ -62,7 +75,7 @@ function App() {
           ))}
         </nav>
 
-        {/* User Info */}
+        {/* User */}
         <div className="px-4 py-4 border-t border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
@@ -77,7 +90,7 @@ function App() {
 
       </div>
 
-      {/* ── MAIN AREA ── */}
+      {/* ── MAIN ── */}
       <div className="ml-56 flex-1 flex flex-col">
 
         {/* Top Bar */}
@@ -88,11 +101,23 @@ function App() {
 
         {/* Page Content */}
         <div className="flex-1 p-8">
-          {activePage === 'dashboard' && <Dashboard />}
-          {activePage === 'aitools'   && <AITools />}
-          {activePage === 'resumes'   && <Resumes />}
-          {activePage === 'stats'     && <Analytics applications={[]} />}
-          {activePage === 'settings'  && <Settings />}
+          {activePage === 'dashboard' && (
+            <Dashboard
+              statuses={statuses}
+              thresholds={thresholds}
+            />
+          )}
+          {activePage === 'aitools'  && <AITools />}
+          {activePage === 'resumes'  && <Resumes />}
+          {activePage === 'stats'    && <Analytics applications={[]} />}
+          {activePage === 'settings' && (
+            <Settings
+              statuses={statuses}
+              setStatuses={setStatuses}
+              thresholds={thresholds}
+              setThresholds={setThresholds}
+            />
+          )}
         </div>
 
       </div>

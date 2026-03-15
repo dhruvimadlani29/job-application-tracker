@@ -114,7 +114,7 @@ function Settings({ statuses, setStatuses, thresholds, setThresholds }) {
   return (
     <div>
       <p className="text-sm text-gray-400 mb-6">
-        Customize your CoopTracker experience — changes apply instantly across
+        Customize your Job Application Tracker experience — changes apply instantly across
         the app.
       </p>
 

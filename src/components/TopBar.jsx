@@ -5,7 +5,7 @@ import NotificationCenter from './notifications/NotificationCenter'
 
 function TopBar() {
   const location = useLocation()
-  const title    = pageTitles[location.pathname] || 'CoopTracker'
+  const title    = pageTitles[location.pathname] || 'Job Application Tracker'
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',

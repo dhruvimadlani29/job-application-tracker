@@ -118,7 +118,7 @@ export function sendTestNotification() {
     return
   }
   try {
-    new Notification('🎯 CoopTracker Test', {
+    new Notification('🎯 Job Application Tracker Test', {
       body: 'Notifications are working! You will get reminders for deadlines and interviews.',
     })
   } catch (err) {

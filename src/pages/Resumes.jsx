@@ -1,5 +1,7 @@
 // src/pages/Resumes.jsx
 import { useState, useEffect } from 'react'
+import { getCurrentUser } from 'aws-amplify/auth'
+import { getUserData, setUserData } from '../utils/storage'
 
 const TAG_OPTIONS = ['General', 'Frontend', 'Backend', 'Full Stack', 'Data', 'Cloud', 'Other']
 const TAG_COLORS  = {
@@ -12,7 +14,6 @@ const TAG_COLORS  = {
   Other:        'bg-orange-100 text-orange-600',
 }
 
-// Reusable card component for both resumes and cover letters
 function DocumentCard({ doc, type, onEdit, onDelete, onSetDefault }) {
   const icon = type === 'resume' ? '📄' : '✉️'
   return (
@@ -59,7 +60,6 @@ function DocumentCard({ doc, type, onEdit, onDelete, onSetDefault }) {
         </p>
       )}
 
-      {/* Usage count */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-50">
         <div className="flex items-center gap-3">
           <p className="text-xs text-gray-400">Added {doc.createdAt}</p>
@@ -76,12 +76,10 @@ function DocumentCard({ doc, type, onEdit, onDelete, onSetDefault }) {
           </button>
         )}
       </div>
-
     </div>
   )
 }
 
-// Reusable modal form for both resumes and cover letters
 function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editingId, type }) {
   if (!show) return null
 
@@ -89,10 +87,7 @@ function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editing
     ? (editingId ? '✏️ Edit Resume' : '➕ Add Resume')
     : (editingId ? '✏️ Edit Cover Letter' : '➕ Add Cover Letter')
 
-  const placeholder = type === 'resume'
-    ? 'e.g. Resume_Frontend_v3'
-    : 'e.g. CoverLetter_Shopify_v2'
-
+  const placeholder     = type === 'resume' ? 'e.g. Resume_Frontend_v3'      : 'e.g. CoverLetter_Shopify_v2'
   const descPlaceholder = type === 'resume'
     ? 'e.g. Tailored for frontend roles — highlights React and Tailwind projects.'
     : 'e.g. Written specifically for Shopify — mentions their mission and commerce platform.'
@@ -112,42 +107,30 @@ function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editing
         <div className="flex justify-between items-center mb-5">
           <p className="text-base font-bold text-gray-800">{title}</p>
           <button onClick={onClose}
-            className="text-gray-300 hover:text-gray-600 text-xl font-bold leading-none">
-            ✕
-          </button>
+            className="text-gray-300 hover:text-gray-600 text-xl font-bold leading-none">✕</button>
         </div>
 
         <div className="flex flex-col gap-4">
-
           <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-              Name *
-            </label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Name *</label>
             <input name="name" value={formData.name} onChange={handleChange}
               placeholder={placeholder}
               className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors"/>
           </div>
-
           <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-              Tag / Type
-            </label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Tag / Type</label>
             <select name="tag" value={formData.tag} onChange={handleChange}
               className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 bg-white transition-colors">
               {TAG_OPTIONS.map(tag => <option key={tag}>{tag}</option>)}
             </select>
           </div>
-
           <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-              Description / Notes
-            </label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Description / Notes</label>
             <textarea name="description" value={formData.description} onChange={handleChange}
               placeholder={descPlaceholder} rows={3}
               className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors resize-none"/>
           </div>
 
-          {/* Default toggle */}
           <div
             onClick={() => setFormData({ ...formData, isDefault: !formData.isDefault })}
             className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all
@@ -160,12 +143,9 @@ function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editing
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-700">Set as Default</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Suggested first when adding new applications
-              </p>
+              <p className="text-xs text-gray-400 mt-0.5">Suggested first when adding new applications</p>
             </div>
           </div>
-
         </div>
 
         <div className="flex gap-3 mt-6">
@@ -184,16 +164,25 @@ function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editing
   )
 }
 
-// Main hook to manage a document collection (resumes OR cover letters)
 function useDocuments(storageKey) {
-  const [docs, setDocs] = useState(() => {
-    const saved = localStorage.getItem(storageKey)
-    return saved ? JSON.parse(saved) : []
-  })
+  const [userId, setUserId] = useState(null)
+  const [docs, setDocs]     = useState([])
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(docs))
-  }, [docs])
+    getCurrentUser()
+      .then(u => setUserId(u.userId))
+      .catch(() => setUserId('guest'))
+  }, [])
+
+  useEffect(() => {
+    if (!userId) return
+    setDocs(getUserData(storageKey, userId, []))
+  }, [userId, storageKey])
+
+  useEffect(() => {
+    if (!userId) return
+    setUserData(storageKey, userId, docs)
+  }, [docs, userId])
 
   const defaultDoc = docs.find(d => d.isDefault)
 
@@ -218,8 +207,7 @@ function useDocuments(storageKey) {
 
   function edit(id, formData) {
     setDocs(prev => prev.map(d =>
-      d.id === id
-        ? { ...d, ...formData }
+      d.id === id ? { ...d, ...formData }
         : formData.isDefault ? { ...d, isDefault: false } : d
     ))
   }
@@ -236,9 +224,7 @@ function useDocuments(storageKey) {
   return { docs, defaultDoc, add, edit, remove, setDefault }
 }
 
-// ── MAIN COMPONENT ──
 function Resumes() {
-
   const [activeTab, setActiveTab] = useState('resumes')
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -248,8 +234,7 @@ function Resumes() {
 
   const resumes      = useDocuments('coopResumes')
   const coverLetters = useDocuments('coopCoverLetters')
-
-  const active = activeTab === 'resumes' ? resumes : coverLetters
+  const active       = activeTab === 'resumes' ? resumes : coverLetters
 
   function openAddModal() {
     setEditingId(null)
@@ -259,12 +244,7 @@ function Resumes() {
 
   function openEditModal(doc) {
     setEditingId(doc.id)
-    setFormData({
-      name:        doc.name,
-      tag:         doc.tag,
-      description: doc.description,
-      isDefault:   doc.isDefault
-    })
+    setFormData({ name: doc.name, tag: doc.tag, description: doc.description, isDefault: doc.isDefault })
     setShowModal(true)
   }
 
@@ -275,42 +255,29 @@ function Resumes() {
   }
 
   function handleSubmit() {
-    if (!formData.name.trim()) {
-      alert('Please enter a name!')
-      return
-    }
-    if (editingId) {
-      active.edit(editingId, formData)
-    } else {
-      active.add(formData)
-    }
+    if (!formData.name.trim()) { alert('Please enter a name!'); return }
+    if (editingId) { active.edit(editingId, formData) }
+    else           { active.add(formData) }
     closeModal()
   }
 
   const tabs = [
-    { key: 'resumes',       label: '📄 Resumes',       count: resumes.docs.length      },
-    { key: 'coverLetters',  label: '✉️ Cover Letters',  count: coverLetters.docs.length },
+    { key: 'resumes',      label: '📄 Resumes',       count: resumes.docs.length      },
+    { key: 'coverLetters', label: '✉️ Cover Letters',  count: coverLetters.docs.length },
   ]
 
   return (
     <div>
 
-      {/* ── HEADER BANNER ── */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-6 text-white">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider opacity-75 mb-1">
-              Document Manager
-            </p>
-            <h2 className="text-lg font-bold mb-1">
-              Track your resumes and cover letters
-            </h2>
+            <p className="text-xs font-bold uppercase tracking-wider opacity-75 mb-1">Document Manager</p>
+            <h2 className="text-lg font-bold mb-1">Track your resumes and cover letters</h2>
             <p className="text-sm opacity-80">
               Always know which resume and cover letter you sent to which company.
-              Never mix them up again!
             </p>
-
-            {/* Show defaults */}
             <div className="flex gap-3 mt-3 flex-wrap">
               {resumes.defaultDoc && (
                 <div className="bg-white/20 rounded-xl px-3 py-1.5 inline-flex items-center gap-2">
@@ -326,7 +293,6 @@ function Resumes() {
               )}
             </div>
           </div>
-
           <button onClick={openAddModal}
             className="flex-shrink-0 ml-4 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all border border-white/20 whitespace-nowrap">
             + Add {activeTab === 'resumes' ? 'Resume' : 'Cover Letter'}
@@ -334,25 +300,22 @@ function Resumes() {
         </div>
       </div>
 
-      {/* ── AWS NOTICE ── */}
+      {/* AWS Notice */}
       <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 mb-5 flex items-center gap-3">
         <span className="text-lg flex-shrink-0">☁️</span>
         <p className="text-xs text-amber-700">
-          <span className="font-bold">PDF uploads coming in Week 3</span> — currently track documents by name and tag. Real file uploads connect with AWS S3.
+          <span className="font-bold">PDF uploads coming soon</span> — currently track documents by name and tag.
         </p>
       </div>
 
-      {/* ── TABS ── */}
+      {/* Tabs */}
       <div className="flex gap-2 mb-5">
         {tabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all
               ${activeTab === tab.key
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'}`}
-          >
+                : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'}`}>
             {tab.label}
             <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold
               ${activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
@@ -362,12 +325,10 @@ function Resumes() {
         ))}
       </div>
 
-      {/* ── DOCUMENT CARDS ── */}
+      {/* Cards */}
       {active.docs.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-          <div className="text-5xl mb-3">
-            {activeTab === 'resumes' ? '📄' : '✉️'}
-          </div>
+          <div className="text-5xl mb-3">{activeTab === 'resumes' ? '📄' : '✉️'}</div>
           <p className="font-semibold text-gray-500">
             No {activeTab === 'resumes' ? 'resumes' : 'cover letters'} yet
           </p>
@@ -383,8 +344,7 @@ function Resumes() {
         <div className="grid grid-cols-2 gap-4">
           {active.docs.map(doc => (
             <DocumentCard
-              key={doc.id}
-              doc={doc}
+              key={doc.id} doc={doc}
               type={activeTab === 'resumes' ? 'resume' : 'coverLetter'}
               onEdit={openEditModal}
               onDelete={active.remove}
@@ -394,13 +354,10 @@ function Resumes() {
         </div>
       )}
 
-      {/* ── MODAL ── */}
+      {/* Modal */}
       <DocumentModal
-        show={showModal}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-        formData={formData}
-        setFormData={setFormData}
+        show={showModal} onClose={closeModal} onSubmit={handleSubmit}
+        formData={formData} setFormData={setFormData}
         editingId={editingId}
         type={activeTab === 'resumes' ? 'resume' : 'coverLetter'}
       />

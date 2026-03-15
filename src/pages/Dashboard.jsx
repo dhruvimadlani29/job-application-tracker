@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import AppCard from "../components/AppCard";
 import WeeklySummary from "../components/WeeklySummary";
 import ApplicationModal from "../components/ApplicationModal";
+import NotificationBanner from "../components/NotificationBanner";
+import { exportApplicationsPDF } from "../utils/exportPDF";
+import { checkAndNotify, getNotificationPermission } from '../utils/notifications'
 
 function Dashboard({ statuses, thresholds }) {
   const [applications, setApplications] = useState(() => {
@@ -38,6 +41,17 @@ function Dashboard({ statuses, thresholds }) {
   const [editingApp, setEditingApp] = useState(null);
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fire notifications on every page load
+useEffect(() => {
+  if (getNotificationPermission() === 'granted') {
+    // Small delay so app fully loads first
+    const timer = setTimeout(() => {
+      checkAndNotify(applications)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }
+}, [])
 
   useEffect(() => {
     localStorage.setItem("coopApplications", JSON.stringify(applications));
@@ -207,6 +221,8 @@ function Dashboard({ statuses, thresholds }) {
       {/* ── AI WEEKLY SUMMARY ── */}
       <WeeklySummary applications={applications} />
 
+      {/* ── NOTIFICATION BANNER ── */}
+      <NotificationBanner applications={applications} />
       {/* ── STAT BOXES ── */}
       <div className="grid grid-cols-3 gap-3 mb-8 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
         {statBoxes.map((stat) => {
@@ -274,6 +290,13 @@ function Dashboard({ statuses, thresholds }) {
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl transition-colors text-sm whitespace-nowrap"
           >
             + Add Application
+          </button>
+          <button
+            onClick={() => exportApplicationsPDF(applications)}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm whitespace-nowrap"
+            title="Export all applications to PDF"
+          >
+            📥 Export PDF
           </button>
         </div>
       </div>

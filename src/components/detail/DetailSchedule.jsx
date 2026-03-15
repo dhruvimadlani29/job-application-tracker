@@ -1,30 +1,19 @@
 // src/components/detail/DetailSchedule.jsx
 function DetailSchedule({ application }) {
-  function getDeadlineInfo() {
-    if (!application.deadline) return null;
-    const days = Math.ceil(
-      (new Date(application.deadline) - new Date()) / (1000 * 60 * 60 * 24),
-    );
-    if (days < 0)
-      return {
-        text: `Passed ${Math.abs(days)} days ago`,
-        color: "text-red-500",
-        bg: "bg-red-50",
-      };
-    if (days === 0)
-      return { text: "TODAY!", color: "text-red-600", bg: "bg-red-50" };
-    if (days <= 3)
-      return {
-        text: `${days} day${days > 1 ? "s" : ""} left`,
-        color: "text-orange-600",
-        bg: "bg-orange-50",
-      };
-    return {
-      text: `${days} days left`,
-      color: "text-green-600",
-      bg: "bg-green-50",
-    };
-  }
+function getDeadlineInfo() {
+  if (!application.deadline) return null
+
+  const deadline = new Date(`${application.deadline}T12:00:00`)
+  const today    = new Date()
+  today.setHours(12, 0, 0, 0)
+
+  const days = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24))
+
+  if (days < 0)   return { text: `Deadline passed ${Math.abs(days)} day${Math.abs(days)>1?'s':''} ago`, color: 'text-red-500',    bg: 'bg-red-50'    }
+  if (days === 0)  return { text: 'Deadline is TODAY!',                                                   color: 'text-red-600',    bg: 'bg-red-50'    }
+  if (days <= 3)   return { text: `${days} day${days>1?'s':''} left — apply soon!`,                      color: 'text-orange-600', bg: 'bg-orange-50' }
+  return               { text: `${days} days until deadline`,                                         color: 'text-green-600',  bg: 'bg-green-50'  }
+}
 
   function getInterviewInfo() {
     if (!application.interviewDate) return null;

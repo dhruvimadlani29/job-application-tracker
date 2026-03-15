@@ -51,33 +51,36 @@ function AppCard({
     if (!showDetail) setShowDetail(true);
   }
 
-  function getDeadlineBadge() {
-    if (!application.deadline) return null;
-    const days = Math.ceil(
-      (new Date(application.deadline) - new Date()) / (1000 * 60 * 60 * 24),
-    );
-    if (days > 7) return null;
+function getDeadlineBadge() {
+  if (!application.deadline) return null
 
-    let className =
-      "mt-2 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold ";
-    let text = "";
+  // Parse as local noon to avoid timezone shift
+  const deadline = new Date(`${application.deadline}T12:00:00`)
+  const today    = new Date()
+  today.setHours(12, 0, 0, 0)
 
-    if (days < 0) {
-      className += "bg-red-50 text-red-500";
-      text = `❌ Deadline passed ${Math.abs(days)} days ago`;
-    } else if (days === 0) {
-      className += "bg-red-50 text-red-600";
-      text = "🚨 Deadline is TODAY!";
-    } else if (days <= 3) {
-      className += "bg-orange-50 text-orange-600";
-      text = `⚠️ Deadline in ${days} day${days > 1 ? "s" : ""}!`;
-    } else {
-      className += "bg-yellow-50 text-yellow-600";
-      text = `📅 Deadline in ${days} days`;
-    }
+  const days = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24))
+  if (days > 7) return null
 
-    return <div className={className}>{text}</div>;
+  let className = 'mt-2 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold '
+  let text = ''
+
+  if (days < 0) {
+    className += 'bg-red-50 text-red-500'
+    text = `❌ Deadline passed ${Math.abs(days)} day${Math.abs(days) > 1 ? 's' : ''} ago`
+  } else if (days === 0) {
+    className += 'bg-red-50 text-red-600'
+    text = '🚨 Deadline is TODAY!'
+  } else if (days <= 3) {
+    className += 'bg-orange-50 text-orange-600'
+    text = `⚠️ Deadline in ${days} day${days > 1 ? 's' : ''}!`
+  } else {
+    className += 'bg-yellow-50 text-yellow-600'
+    text = `📅 Deadline in ${days} days`
   }
+
+  return <div className={className}>{text}</div>
+}
 
   function getInterviewCountdown() {
     if (!application.interviewDate) return null;
@@ -270,11 +273,6 @@ function AppCard({
             onClose={closePanel}
           />
         </div>
-
-        {/* Click hint */}
-        <p className="text-xs text-gray-300 mt-3 text-center">
-          Click card to view full details
-        </p>
       </div>
 
       {/* ── DETAIL MODAL — outside card div so no stopPropagation conflict ── */}

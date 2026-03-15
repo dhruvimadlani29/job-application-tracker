@@ -1,5 +1,12 @@
 // src/pages/Settings.jsx
 import { useState } from "react";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendTestNotification,
+  getNotifPrefs,
+  saveNotifPrefs,
+} from "../utils/notifications";
 
 function Settings({ statuses, setStatuses, thresholds, setThresholds }) {
   const [savedThresh, setSavedThresh] = useState(false);
@@ -10,7 +17,23 @@ function Settings({ statuses, setStatuses, thresholds, setThresholds }) {
     status: true,
     threshold: true,
     profile: true,
+    notifications: true,
   });
+  const [notifPermission, setNotifPermission] = useState(
+    getNotificationPermission(),
+  );
+  const [notifPrefs, setNotifPrefs] = useState(getNotifPrefs);
+  const [savedPrefs, setSavedPrefs] = useState(false);
+
+  function handleNotifPrefChange(key, value) {
+    setNotifPrefs((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleSaveNotifPrefs() {
+    saveNotifPrefs(notifPrefs);
+    setSavedPrefs(true);
+    setTimeout(() => setSavedPrefs(false), 2000);
+  }
 
   function toggleSection(key) {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -51,6 +74,11 @@ function Settings({ statuses, setStatuses, thresholds, setThresholds }) {
 
   const enabledCount = statuses.filter((s) => s.enabled).length;
   const disabledCount = statuses.filter((s) => !s.enabled).length;
+
+  async function handleEnableNotifications() {
+    const granted = await requestNotificationPermission();
+    setNotifPermission(granted ? "granted" : "denied");
+  }
 
   function SectionHeader({ sectionKey, icon, title, subtitle, saved }) {
     return (
@@ -356,6 +384,268 @@ function Settings({ statuses, setStatuses, thresholds, setThresholds }) {
                     {savedProfile ? "✅ Saved!" : "Save Profile"}
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* NOTIFICATIONS */}
+          {/* NOTIFICATIONS */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <SectionHeader
+              sectionKey="notifications"
+              icon="🔔"
+              title="Notifications"
+              subtitle="Deadline, interview and follow-up reminders"
+              saved={savedPrefs}
+            />
+
+            {expanded.notifications && (
+              <div className="px-6 pb-6 border-t border-gray-50 pt-4 space-y-4">
+                {/* Permission status */}
+                <div
+                  className={`rounded-xl p-4 ${
+                    notifPermission === "granted"
+                      ? "bg-green-50 border border-green-200"
+                      : notifPermission === "denied"
+                        ? "bg-red-50 border border-red-200"
+                        : "bg-gray-50 border border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">
+                      {notifPermission === "granted"
+                        ? "✅"
+                        : notifPermission === "denied"
+                          ? "❌"
+                          : "⏳"}
+                    </span>
+                    <p
+                      className={`text-sm font-bold ${
+                        notifPermission === "granted"
+                          ? "text-green-700"
+                          : notifPermission === "denied"
+                            ? "text-red-700"
+                            : "text-gray-700"
+                      }`}
+                    >
+                      {notifPermission === "granted"
+                        ? "Notifications Enabled"
+                        : notifPermission === "denied"
+                          ? "Notifications Blocked"
+                          : "Notifications Not Enabled"}
+                    </p>
+                  </div>
+                  <p
+                    className={`text-xs ${
+                      notifPermission === "granted"
+                        ? "text-green-600"
+                        : notifPermission === "denied"
+                          ? "text-red-600"
+                          : "text-gray-500"
+                    }`}
+                  >
+                    {notifPermission === "granted"
+                      ? "You will receive browser notifications for the alerts you enable below"
+                      : notifPermission === "denied"
+                        ? "Click the lock icon 🔒 in your browser address bar to re-enable"
+                        : "Click below to enable browser notifications"}
+                  </p>
+                </div>
+
+                {notifPermission === "default" && (
+                  <button
+                    onClick={handleEnableNotifications}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-colors"
+                  >
+                    🔔 Enable Notifications
+                  </button>
+                )}
+
+                {/* ── NOTIFICATION TYPE TOGGLES ── */}
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+                    Which notifications to receive
+                  </p>
+                  <div className="space-y-2">
+                    {/* Deadline toggle */}
+                    <div
+                      onClick={() =>
+                        handleNotifPrefChange(
+                          "deadlineEnabled",
+                          !notifPrefs.deadlineEnabled,
+                        )
+                      }
+                      className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all
+              ${
+                notifPrefs.deadlineEnabled
+                  ? "border-blue-100 bg-blue-50"
+                  : "border-gray-100 bg-gray-50 opacity-60"
+              }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0
+                ${notifPrefs.deadlineEnabled ? "bg-blue-500" : "bg-gray-300"}`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all
+                  ${notifPrefs.deadlineEnabled ? "left-4" : "left-0.5"}`}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700">
+                            📅 Deadline Reminders
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Alerts before application deadlines
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full
+              ${notifPrefs.deadlineEnabled ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-400"}`}
+                      >
+                        {notifPrefs.deadlineEnabled ? "ON" : "OFF"}
+                      </span>
+                    </div>
+
+                    {/* Interview toggle */}
+                    <div
+                      onClick={() =>
+                        handleNotifPrefChange(
+                          "interviewEnabled",
+                          !notifPrefs.interviewEnabled,
+                        )
+                      }
+                      className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all
+              ${
+                notifPrefs.interviewEnabled
+                  ? "border-blue-100 bg-blue-50"
+                  : "border-gray-100 bg-gray-50 opacity-60"
+              }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0
+                ${notifPrefs.interviewEnabled ? "bg-blue-500" : "bg-gray-300"}`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all
+                  ${notifPrefs.interviewEnabled ? "left-4" : "left-0.5"}`}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700">
+                            🎤 Interview Reminders
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Alerts before scheduled interviews
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full
+              ${notifPrefs.interviewEnabled ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-400"}`}
+                      >
+                        {notifPrefs.interviewEnabled ? "ON" : "OFF"}
+                      </span>
+                    </div>
+
+                    {/* Follow-up toggle */}
+                    <div
+                      onClick={() =>
+                        handleNotifPrefChange(
+                          "followupEnabled",
+                          !notifPrefs.followupEnabled,
+                        )
+                      }
+                      className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all
+              ${
+                notifPrefs.followupEnabled
+                  ? "border-blue-100 bg-blue-50"
+                  : "border-gray-100 bg-gray-50 opacity-60"
+              }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0
+                ${notifPrefs.followupEnabled ? "bg-blue-500" : "bg-gray-300"}`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all
+                  ${notifPrefs.followupEnabled ? "left-4" : "left-0.5"}`}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700">
+                            📬 Follow-up Reminders
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Nudge to follow up after 14+ days
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full
+              ${notifPrefs.followupEnabled ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-400"}`}
+                      >
+                        {notifPrefs.followupEnabled ? "ON" : "OFF"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── DEADLINE WARNING WINDOW SLIDER ── */}
+                {notifPrefs.deadlineEnabled && (
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-bold text-gray-600">
+                        📅 Warn me about deadlines how many days in advance?
+                      </label>
+                      <span className="text-sm font-bold text-blue-600">
+                        {notifPrefs.deadlineWarningDays} days
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={14}
+                      value={notifPrefs.deadlineWarningDays}
+                      onChange={(e) =>
+                        handleNotifPrefChange(
+                          "deadlineWarningDays",
+                          Number(e.target.value),
+                        )
+                      }
+                      className="w-full accent-blue-500"
+                    />
+                    <div className="flex justify-between text-xs text-gray-300 mt-0.5">
+                      <span>1 day</span>
+                      <span>14 days</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      You will see deadline notifications starting{" "}
+                      {notifPrefs.deadlineWarningDays} days before the deadline
+                    </p>
+                  </div>
+                )}
+
+                {/* Save + Test buttons */}
+                <button
+                  onClick={handleSaveNotifPrefs}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-colors"
+                >
+                  {savedPrefs ? "✅ Saved!" : "Save Notification Settings"}
+                </button>
+
+                {/* {notifPermission === "granted" && (
+                  <button
+                    onClick={sendTestNotification}
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm transition-colors"
+                  >
+                    🔔 Send Test Notification
+                  </button>
+                )} */}
               </div>
             )}
           </div>

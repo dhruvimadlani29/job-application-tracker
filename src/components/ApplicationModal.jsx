@@ -305,14 +305,19 @@ function ApplicationModal({ show, onClose, onSubmit, editingApp, statuses }) {
                 {formData.deadline && (
                   <p className="text-xs mt-1 font-semibold">
                     {(() => {
+                      const deadline = new Date(
+                        `${formData.deadline}T12:00:00`,
+                      );
+                      const today = new Date();
+                      today.setHours(12, 0, 0, 0);
                       const days = Math.ceil(
-                        (new Date(formData.deadline) - new Date()) /
-                          (1000 * 60 * 60 * 24),
+                        (deadline - today) / (1000 * 60 * 60 * 24),
                       );
                       if (days < 0)
                         return (
                           <span className="text-red-500">
-                            ❌ Deadline passed {Math.abs(days)} days ago
+                            ❌ Deadline passed {Math.abs(days)} day
+                            {Math.abs(days) > 1 ? "s" : ""} ago
                           </span>
                         );
                       if (days === 0)

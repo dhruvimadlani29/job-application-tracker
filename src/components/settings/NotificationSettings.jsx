@@ -29,15 +29,30 @@ function NotificationSettings() {
   }
 
   const permissionConfig = {
-    granted: { bg: 'bg-green-50 border-green-200', icon: '✅', color: 'text-green-700', subColor: 'text-green-600',
-      title: 'Notifications Enabled',
-      desc:  'You will receive browser notifications for the alerts you enable below' },
-    denied:  { bg: 'bg-red-50 border-red-200',   icon: '❌', color: 'text-red-700',   subColor: 'text-red-600',
-      title: 'Notifications Blocked',
-      desc:  'Click the lock icon 🔒 in your browser address bar to re-enable' },
-    default: { bg: 'bg-gray-50 border-gray-200', icon: '⏳', color: 'text-gray-700',  subColor: 'text-gray-500',
-      title: 'Notifications Not Enabled',
-      desc:  'Click below to enable browser notifications' },
+    granted: {
+      bg:       'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+      icon:     '✅',
+      color:    'text-green-700 dark:text-green-400',
+      subColor: 'text-green-600 dark:text-green-500',
+      title:    'Notifications Enabled',
+      desc:     'You will receive browser notifications for the alerts you enable below'
+    },
+    denied: {
+      bg:       'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+      icon:     '❌',
+      color:    'text-red-700 dark:text-red-400',
+      subColor: 'text-red-600 dark:text-red-500',
+      title:    'Notifications Blocked',
+      desc:     'Click the lock icon 🔒 in your browser address bar to re-enable'
+    },
+    default: {
+      bg:       'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600',
+      icon:     '⏳',
+      color:    'text-gray-700 dark:text-gray-300',
+      subColor: 'text-gray-500 dark:text-gray-400',
+      title:    'Notifications Not Enabled',
+      desc:     'Click below to enable browser notifications'
+    },
   }
 
   const config = permissionConfig[notifPermission] || permissionConfig.default
@@ -49,7 +64,7 @@ function NotificationSettings() {
   ]
 
   return (
-    <div className="px-6 pb-6 border-t border-gray-50 pt-4 space-y-4">
+    <div className="px-6 pb-6 border-t border-gray-50 dark:border-gray-700 pt-4 space-y-4">
 
       {/* Permission status */}
       <div className={`rounded-xl p-4 border ${config.bg}`}>
@@ -69,7 +84,7 @@ function NotificationSettings() {
 
       {/* Type toggles */}
       <div>
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
           Which notifications to receive
         </p>
         <div className="space-y-2">
@@ -79,23 +94,25 @@ function NotificationSettings() {
               onClick={() => handlePrefChange(item.key, !notifPrefs[item.key])}
               className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all
                 ${notifPrefs[item.key]
-                  ? 'border-blue-100 bg-blue-50'
-                  : 'border-gray-100 bg-gray-50 opacity-60'}`}
+                  ? 'border-blue-100 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20'
+                  : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 opacity-60'}`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-5 rounded-full transition-all relative flex-shrink-0
-                  ${notifPrefs[item.key] ? 'bg-blue-500' : 'bg-gray-300'}`}>
+                  ${notifPrefs[item.key] ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
                   <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all
                     ${notifPrefs[item.key] ? 'left-4' : 'left-0.5'}`}/>
                 </div>
                 <span className="text-base">{item.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-gray-700">{item.label}</p>
-                  <p className="text-xs text-gray-400">{item.desc}</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{item.label}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{item.desc}</p>
                 </div>
               </div>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full
-                ${notifPrefs[item.key] ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-400'}`}>
+                ${notifPrefs[item.key]
+                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'}`}>
                 {notifPrefs[item.key] ? 'ON' : 'OFF'}
               </span>
             </div>
@@ -103,38 +120,42 @@ function NotificationSettings() {
         </div>
       </div>
 
-      {/* Deadline warning slider */}
+      {/* Deadline slider */}
       {notifPrefs.deadlineEnabled && (
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label className="text-xs font-bold text-gray-600">
+            <label className="text-xs font-bold text-gray-600 dark:text-gray-300">
               📅 Warn me about deadlines how many days in advance?
             </label>
-            <span className="text-sm font-bold text-blue-600">{notifPrefs.deadlineWarningDays} days</span>
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+              {notifPrefs.deadlineWarningDays} days
+            </span>
           </div>
           <input type="range" min={1} max={14}
             value={notifPrefs.deadlineWarningDays}
             onChange={e => handlePrefChange('deadlineWarningDays', Number(e.target.value))}
             className="w-full accent-blue-500"
           />
-          <div className="flex justify-between text-xs text-gray-300 mt-0.5">
+          <div className="flex justify-between text-xs text-gray-300 dark:text-gray-600 mt-0.5">
             <span>1 day</span><span>14 days</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             Notifications start {notifPrefs.deadlineWarningDays} days before the deadline
           </p>
         </div>
       )}
 
-      {/* Save + Test */}
+      {/* Save */}
       <button onClick={handleSave}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-colors">
         {saved ? '✅ Saved!' : 'Save Notification Settings'}
       </button>
 
+      {/* Test */}
       {notifPermission === 'granted' && (
         <button onClick={sendTestNotification}
-          className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm transition-colors">
+          className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600
+            text-gray-700 dark:text-gray-300 font-semibold py-3 rounded-xl text-sm transition-colors">
           🔔 Send Test Notification
         </button>
       )}

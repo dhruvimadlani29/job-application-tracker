@@ -143,71 +143,83 @@ function NotificationCenter() {
           )}
         </button>
 
-        {/* Dropdown */}
-        {open && (
-          <div className="absolute right-0 top-11 w-96 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+{/* Dropdown */}
+{open && (
+  <div className="absolute right-0 top-11 w-96 bg-white dark:bg-gray-800
+    rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
 
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-gray-800 text-sm">Notifications</span>
-                {unreadCount > 0 && (
-                  <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {unreadCount} new
-                  </span>
-                )}
-                {unreadCount === 0 && activeNotifications.length > 0 && (
-                  <span className="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">
-                    {activeNotifications.length} total
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {unreadCount > 0 && (
-                  <button onClick={markAllRead}
-                    className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-                    Mark all read
-                  </button>
-                )}
-                {activeNotifications.length > 0 && (
-                  <button onClick={dismissAll}
-                    className="text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">
-                    Clear all
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="max-h-96 overflow-y-auto">
-              {activeNotifications.length === 0
-                ? <NotificationEmpty />
-                : activeNotifications.map(notif => (
-                    <NotificationItem
-                      key={notif.id}
-                      notification={notif}
-                      isRead={read.includes(notif.id)}
-                      onDismiss={dismissOne}
-                      onClick={handleNotificationClick}
-                    />
-                  ))
-              }
-            </div>
-
-            {activeNotifications.length > 0 && (
-              <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-                <p className="text-xs text-gray-400 text-center">
-                  Notifications reset daily •{' '}
-                  <button
-                    onClick={() => { setOpen(false); navigate('/settings') }}
-                    className="text-blue-500 hover:text-blue-700 font-semibold"
-                  >
-                    Manage in Settings
-                  </button>
-                </p>
-              </div>
-            )}
-
-          </div>
+    {/* Header */}
+    <div className="flex items-center justify-between px-4 py-3
+      border-b border-gray-100 dark:border-gray-700">
+      <div className="flex items-center gap-2">
+        <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">
+          Notifications
+        </span>
+        {unreadCount > 0 && (
+          <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            {unreadCount} new
+          </span>
         )}
+        {unreadCount === 0 && activeNotifications.length > 0 && (
+          <span className="bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400
+            text-xs font-bold px-2 py-0.5 rounded-full">
+            {activeNotifications.length} total
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        {unreadCount > 0 && (
+          <button onClick={markAllRead}
+            className="text-xs font-semibold text-blue-500 hover:text-blue-700
+              dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+            Mark all read
+          </button>
+        )}
+        {activeNotifications.length > 0 && (
+          <button onClick={dismissAll}
+            className="text-xs font-semibold text-gray-400 hover:text-gray-600
+              dark:text-gray-500 dark:hover:text-gray-300 transition-colors">
+            Clear all
+          </button>
+        )}
+      </div>
+    </div>
+
+    {/* List */}
+    <div className="max-h-96 overflow-y-auto">
+      {activeNotifications.length === 0
+        ? <NotificationEmpty />
+        : activeNotifications.map(notif => (
+            <NotificationItem
+              key={notif.id}
+              notification={notif}
+              isRead={read.includes(notif.id)}
+              onDismiss={dismissOne}
+              onClick={handleNotificationClick}
+            />
+          ))
+      }
+    </div>
+
+    {/* Footer */}
+    {activeNotifications.length > 0 && (
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700
+        bg-gray-50 dark:bg-gray-700/50">
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+          Notifications reset daily •{' '}
+          <button
+            onClick={() => { setOpen(false); navigate('/settings') }}
+            className="text-blue-500 hover:text-blue-700 dark:text-blue-400
+              dark:hover:text-blue-300 font-semibold"
+          >
+            Manage in Settings
+          </button>
+        </p>
+      </div>
+    )}
+
+  </div>
+)}
 
       </div>
 

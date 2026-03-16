@@ -4,33 +4,40 @@ import { getCurrentUser } from 'aws-amplify/auth'
 import { getUserData, setUserData } from '../utils/storage'
 
 const TAG_OPTIONS = ['General', 'Frontend', 'Backend', 'Full Stack', 'Data', 'Cloud', 'Other']
-const TAG_COLORS  = {
-  General:      'bg-gray-100 text-gray-600',
-  Frontend:     'bg-blue-100 text-blue-600',
-  Backend:      'bg-purple-100 text-purple-600',
-  'Full Stack':  'bg-indigo-100 text-indigo-600',
-  Data:         'bg-green-100 text-green-600',
-  Cloud:        'bg-sky-100 text-sky-600',
-  Other:        'bg-orange-100 text-orange-600',
+
+const TAG_COLORS = {
+  General:      'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+  Frontend:     'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+  Backend:      'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+  'Full Stack': 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400',
+  Data:         'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+  Cloud:        'bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400',
+  Other:        'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400',
 }
 
 function DocumentCard({ doc, type, onEdit, onDelete, onSetDefault }) {
   const icon = type === 'resume' ? '📄' : '✉️'
+
   return (
-    <div className={`bg-white rounded-2xl border-2 p-5 shadow-sm transition-all
-      ${doc.isDefault ? 'border-blue-200 shadow-blue-50' : 'border-gray-100 hover:border-gray-200'}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-2xl border-2 p-5 shadow-sm transition-all
+      ${doc.isDefault
+        ? 'border-blue-200 dark:border-blue-700 shadow-blue-50 dark:shadow-none'
+        : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'}`}>
 
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
           <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0
-            ${type === 'resume' ? 'bg-red-50 border border-red-100' : 'bg-blue-50 border border-blue-100'}`}>
+            ${type === 'resume'
+              ? 'bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800'
+              : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800'}`}>
             <span className="text-xl">{icon}</span>
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-gray-800 text-sm">{doc.name}</h3>
+              <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm">{doc.name}</h3>
               {doc.isDefault && (
-                <span className="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold bg-blue-100 dark:bg-blue-900/40
+                  text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
                   ⭐ Default
                 </span>
               )}
@@ -44,34 +51,40 @@ function DocumentCard({ doc, type, onEdit, onDelete, onSetDefault }) {
 
         <div className="flex items-center gap-1">
           <button onClick={() => onEdit(doc)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:text-blue-400 hover:bg-blue-50 transition-all">
+            className="w-8 h-8 rounded-lg flex items-center justify-center
+              text-gray-300 hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
             ✏️
           </button>
           <button onClick={() => onDelete(doc.id)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all">
+            className="w-8 h-8 rounded-lg flex items-center justify-center
+              text-gray-300 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all">
             🗑
           </button>
         </div>
       </div>
 
       {doc.description && (
-        <p className="text-xs text-gray-500 leading-relaxed mb-3 bg-gray-50 rounded-xl p-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3
+          bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
           {doc.description}
         </p>
       )}
 
-      <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+      <div className="flex items-center justify-between pt-3
+        border-t border-gray-50 dark:border-gray-700">
         <div className="flex items-center gap-3">
-          <p className="text-xs text-gray-400">Added {doc.createdAt}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Added {doc.createdAt}</p>
           {doc.usedFor && doc.usedFor.length > 0 && (
-            <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold text-green-600 dark:text-green-400
+              bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full">
               Used for {doc.usedFor.length} application{doc.usedFor.length > 1 ? 's' : ''}
             </span>
           )}
         </div>
         {!doc.isDefault && (
           <button onClick={() => onSetDefault(doc.id)}
-            className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
+            className="text-xs font-semibold text-blue-500 dark:text-blue-400
+              hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
             Set as Default →
           </button>
         )}
@@ -96,54 +109,67 @@ function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editing
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const inputClass = `mt-1 w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3
+    text-sm outline-none focus:border-blue-400 transition-colors
+    bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
+    placeholder:text-gray-400 dark:placeholder:text-gray-500`
+
+  const labelClass = "text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide"
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl p-6 w-[480px] mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl
+        p-6 w-full max-w-[480px] max-h-[90vh] overflow-y-auto">
 
         <div className="flex justify-between items-center mb-5">
-          <p className="text-base font-bold text-gray-800">{title}</p>
+          <p className="text-base font-bold text-gray-800 dark:text-gray-100">{title}</p>
           <button onClick={onClose}
-            className="text-gray-300 hover:text-gray-600 text-xl font-bold leading-none">✕</button>
+            className="text-gray-300 hover:text-gray-600 dark:hover:text-gray-200
+              text-xl font-bold leading-none">✕</button>
         </div>
 
         <div className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Name *</label>
+            <label className={labelClass}>Name *</label>
             <input name="name" value={formData.name} onChange={handleChange}
-              placeholder={placeholder}
-              className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors"/>
+              placeholder={placeholder} className={inputClass}/>
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Tag / Type</label>
+            <label className={labelClass}>Tag / Type</label>
             <select name="tag" value={formData.tag} onChange={handleChange}
-              className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 bg-white transition-colors">
+              className={inputClass}>
               {TAG_OPTIONS.map(tag => <option key={tag}>{tag}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">Description / Notes</label>
+            <label className={labelClass}>Description / Notes</label>
             <textarea name="description" value={formData.description} onChange={handleChange}
               placeholder={descPlaceholder} rows={3}
-              className="mt-1 w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition-colors resize-none"/>
+              className={`${inputClass} resize-none`}/>
           </div>
 
+          {/* Default toggle */}
           <div
             onClick={() => setFormData({ ...formData, isDefault: !formData.isDefault })}
             className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all
-              ${formData.isDefault ? 'border-blue-200 bg-blue-50' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}
+              ${formData.isDefault
+                ? 'border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20'
+                : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 hover:border-gray-200 dark:hover:border-gray-600'}`}
           >
             <div className={`w-10 h-6 rounded-full transition-all relative flex-shrink-0
-              ${formData.isDefault ? 'bg-blue-500' : 'bg-gray-300'}`}>
+              ${formData.isDefault ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all
                 ${formData.isDefault ? 'left-5' : 'left-1'}`}/>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-700">Set as Default</p>
-              <p className="text-xs text-gray-400 mt-0.5">Suggested first when adding new applications</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Set as Default</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Suggested first when adding new applications
+              </p>
             </div>
           </div>
         </div>
@@ -154,7 +180,8 @@ function DocumentModal({ show, onClose, onSubmit, formData, setFormData, editing
             {editingId ? 'Save Changes' : `Add ${type === 'resume' ? 'Resume' : 'Cover Letter'}`}
           </button>
           <button onClick={onClose}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-3 rounded-xl text-sm transition-colors">
+            className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600
+              text-gray-600 dark:text-gray-300 font-semibold py-3 rounded-xl text-sm transition-colors">
             Cancel
           </button>
         </div>
@@ -262,8 +289,8 @@ function Resumes() {
   }
 
   const tabs = [
-    { key: 'resumes',      label: '📄 Resumes',       count: resumes.docs.length      },
-    { key: 'coverLetters', label: '✉️ Cover Letters',  count: coverLetters.docs.length },
+    { key: 'resumes',      label: '📄 Resumes',      count: resumes.docs.length      },
+    { key: 'coverLetters', label: '✉️ Cover Letters', count: coverLetters.docs.length },
   ]
 
   return (
@@ -271,7 +298,7 @@ function Resumes() {
 
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-6 text-white">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start flex-wrap gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider opacity-75 mb-1">Document Manager</p>
             <h2 className="text-lg font-bold mb-1">Track your resumes and cover letters</h2>
@@ -294,16 +321,18 @@ function Resumes() {
             </div>
           </div>
           <button onClick={openAddModal}
-            className="flex-shrink-0 ml-4 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all border border-white/20 whitespace-nowrap">
+            className="flex-shrink-0 bg-white/20 hover:bg-white/30 text-white font-semibold
+              text-sm px-5 py-2.5 rounded-xl transition-all border border-white/20 whitespace-nowrap">
             + Add {activeTab === 'resumes' ? 'Resume' : 'Cover Letter'}
           </button>
         </div>
       </div>
 
       {/* AWS Notice */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 mb-5 flex items-center gap-3">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800
+        rounded-2xl px-5 py-3 mb-5 flex items-center gap-3">
         <span className="text-lg flex-shrink-0">☁️</span>
-        <p className="text-xs text-amber-700">
+        <p className="text-xs text-amber-700 dark:text-amber-400">
           <span className="font-bold">PDF uploads coming soon</span> — currently track documents by name and tag.
         </p>
       </div>
@@ -315,10 +344,12 @@ function Resumes() {
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all
               ${activeTab === tab.key
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'}`}>
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-blue-300 hover:text-blue-600'}`}>
             {tab.label}
             <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold
-              ${activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+              ${activeTab === tab.key
+                ? 'bg-white/20 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
               {tab.count}
             </span>
           </button>
@@ -327,21 +358,23 @@ function Resumes() {
 
       {/* Cards */}
       {active.docs.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
+        <div className="text-center py-20 bg-white dark:bg-gray-800
+          rounded-2xl border border-gray-100 dark:border-gray-700">
           <div className="text-5xl mb-3">{activeTab === 'resumes' ? '📄' : '✉️'}</div>
-          <p className="font-semibold text-gray-500">
+          <p className="font-semibold text-gray-500 dark:text-gray-400">
             No {activeTab === 'resumes' ? 'resumes' : 'cover letters'} yet
           </p>
-          <p className="text-sm text-gray-400 mt-1 mb-5">
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1 mb-5">
             Add your first {activeTab === 'resumes' ? 'resume' : 'cover letter'} version to start tracking
           </p>
           <button onClick={openAddModal}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold
+              px-6 py-2.5 rounded-xl text-sm transition-colors">
             + Add {activeTab === 'resumes' ? 'Resume' : 'Cover Letter'}
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
           {active.docs.map(doc => (
             <DocumentCard
               key={doc.id} doc={doc}

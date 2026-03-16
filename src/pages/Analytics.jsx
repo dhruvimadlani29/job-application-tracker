@@ -8,15 +8,11 @@ import {
 } from 'recharts'
 
 function Analytics() {
-
   const [applications, setApplications] = useState([])
 
   useEffect(() => {
     getCurrentUser()
-      .then(u => {
-        const data = getUserData('coopApplications', u.userId, [])
-        setApplications(data)
-      })
+      .then(u => setApplications(getUserData('coopApplications', u.userId, [])))
       .catch(() => setApplications([]))
   }, [])
 
@@ -25,7 +21,7 @@ function Analytics() {
   const offers     = applications.filter(a => a.status === 'Offer Received').length
   const rejected   = applications.filter(a => a.status === 'Rejected').length
   const ghosted    = applications.filter(a => a.status === 'Ghosted').length
-  const active     = applications.filter(a => !['Rejected', 'Ghosted'].includes(a.status)).length
+  const active     = applications.filter(a => !['Rejected','Ghosted'].includes(a.status)).length
 
   const statusData = [
     { name: 'Applied',      count: applications.filter(a => a.status === 'Applied').length,           fill: '#3B82F6' },
@@ -54,14 +50,13 @@ function Analytics() {
       const key = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
       monthMap[key] = (monthMap[key] || 0) + 1
     })
-    return Object.entries(monthMap)
-      .map(([month, count]) => ({ month, count }))
-      .slice(-6)
+    return Object.entries(monthMap).map(([month, count]) => ({ month, count })).slice(-6)
   })()
 
   const funnelSteps = [
     { step: 1, label: 'Applied',      count: total,      rate: 100 },
-    { step: 2, label: 'Phone Screen', count: applications.filter(a => a.status === 'Phone Screen').length,
+    { step: 2, label: 'Phone Screen',
+      count: applications.filter(a => a.status === 'Phone Screen').length,
       rate: total > 0 ? Math.round((applications.filter(a => a.status === 'Phone Screen').length / total) * 100) : 0 },
     { step: 3, label: 'Interview',    count: interviews,
       rate: total > 0 ? Math.round((interviews / total) * 100) : 0 },
@@ -69,11 +64,14 @@ function Analytics() {
       rate: total > 0 ? Math.round((offers / total) * 100) : 0 },
   ]
 
+  const cardClass   = "bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm"
+  const tooltipStyle = { borderRadius: '12px', border: '1px solid #374151', fontSize: '12px', backgroundColor: '#1f2937', color: '#f9fafb' }
+
   if (total === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-gray-400">
         <div className="text-6xl mb-4">📊</div>
-        <p className="text-lg font-semibold text-gray-500">No data yet</p>
+        <p className="text-lg font-semibold text-gray-500 dark:text-gray-400">No data yet</p>
         <p className="text-sm mt-1">Add applications from the Dashboard to see your analytics</p>
       </div>
     )
@@ -83,22 +81,22 @@ function Analytics() {
     <div className="space-y-6">
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 max-sm:grid-cols-2">
         {[
-          { label: 'Total Applications', value: total,      color: 'text-blue-600',   bg: 'bg-blue-50'   },
-          { label: 'Active Applications', value: active,    color: 'text-green-600',  bg: 'bg-green-50'  },
+          { label: 'Total Applications', value: total,      color: 'text-blue-600',   bg: 'bg-blue-50 dark:bg-blue-900/20'   },
+          { label: 'Active Applications', value: active,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-900/20'  },
           { label: 'Interview Rate',
             value: `${total > 0 ? Math.round((interviews/total)*100) : 0}%`,
-            color: 'text-orange-600', bg: 'bg-orange-50' },
+            color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
           { label: 'Offer Rate',
             value: `${total > 0 ? Math.round((offers/total)*100) : 0}%`,
-            color: 'text-green-600', bg: 'bg-green-50' },
+            color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
           { label: 'Rejection Rate',
             value: `${total > 0 ? Math.round((rejected/total)*100) : 0}%`,
-            color: 'text-red-500', bg: 'bg-red-50' },
-          { label: 'Ghosted', value: ghosted, color: 'text-gray-500', bg: 'bg-gray-50' },
+            color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' },
+          { label: 'Ghosted', value: ghosted, color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-700/50' },
         ].map(stat => (
-          <div key={stat.label} className={`${stat.bg} rounded-2xl p-5 border border-gray-100 shadow-sm`}>
+          <div key={stat.label} className={`${stat.bg} rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm`}>
             <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">{stat.label}</p>
             <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
           </div>
@@ -106,17 +104,17 @@ function Analytics() {
       </div>
 
       {/* Charts row 1 */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-1">Applications by Status</h3>
+        <div className={cardClass}>
+          <h3 className="font-bold text-gray-700 dark:text-gray-200 mb-1">Applications by Status</h3>
           <p className="text-xs text-gray-400 mb-4">How many applications in each stage</p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={statusData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6"/>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151"/>
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9CA3AF' }}/>
               <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} allowDecimals={false}/>
-              <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', fontSize: '12px' }}/>
+              <Tooltip contentStyle={tooltipStyle}/>
               <Bar dataKey="count" radius={[6,6,0,0]}>
                 {statusData.map((entry, i) => <Cell key={i} fill={entry.fill}/>)}
               </Bar>
@@ -124,8 +122,8 @@ function Analytics() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-1">Application Breakdown</h3>
+        <div className={cardClass}>
+          <h3 className="font-bold text-gray-700 dark:text-gray-200 mb-1">Application Breakdown</h3>
           <p className="text-xs text-gray-400 mb-4">Active vs rejected vs ghosted vs offers</p>
           <div className="flex items-center gap-4">
             <ResponsiveContainer width="60%" height={200}>
@@ -133,15 +131,15 @@ function Analytics() {
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
                   {pieData.map((entry, i) => <Cell key={i} fill={entry.color}/>)}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', fontSize: '12px' }}/>
+                <Tooltip contentStyle={tooltipStyle}/>
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col gap-2">
               {pieData.map(item => (
                 <div key={item.name} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}/>
-                  <span className="text-xs text-gray-600">{item.name}</span>
-                  <span className="text-xs font-bold text-gray-800 ml-auto pl-4">{item.value}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{item.name}</span>
+                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200 ml-auto pl-4">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -151,22 +149,22 @@ function Analytics() {
       </div>
 
       {/* Charts row 2 */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 max-lg:grid-cols-1">
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-1">Applications Over Time</h3>
+        <div className={cardClass}>
+          <h3 className="font-bold text-gray-700 dark:text-gray-200 mb-1">Applications Over Time</h3>
           <p className="text-xs text-gray-400 mb-4">How many you applied each month</p>
           {timelineData.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8">
-              No date data — make sure you set dates when adding applications
+              No date data — set dates when adding applications
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={timelineData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6"/>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151"/>
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9CA3AF' }}/>
                 <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} allowDecimals={false}/>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', fontSize: '12px' }}/>
+                <Tooltip contentStyle={tooltipStyle}/>
                 <Line type="monotone" dataKey="count" stroke="#3B82F6" strokeWidth={2}
                   dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }}/>
               </LineChart>
@@ -174,8 +172,8 @@ function Analytics() {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-1">Conversion Funnel</h3>
+        <div className={cardClass}>
+          <h3 className="font-bold text-gray-700 dark:text-gray-200 mb-1">Conversion Funnel</h3>
           <p className="text-xs text-gray-400 mb-5">How many applications convert at each stage</p>
           <div className="space-y-3">
             {funnelSteps.map((step, index) => {
@@ -188,14 +186,14 @@ function Analytics() {
                         style={{ backgroundColor: barColors[index] }}>
                         {step.step}
                       </div>
-                      <span className="text-sm font-medium text-gray-600">{step.label}</span>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{step.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-800">{step.count}</span>
+                      <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{step.count}</span>
                       <span className="text-xs text-gray-400">({step.rate}%)</span>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2.5 ml-7">
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 ml-7">
                     <div className="h-2.5 rounded-full transition-all"
                       style={{ width: `${step.rate}%`, backgroundColor: barColors[index] }}/>
                   </div>
@@ -204,9 +202,9 @@ function Analytics() {
             })}
           </div>
 
-          <div className="mt-5 bg-blue-50 rounded-xl p-4">
-            <p className="text-xs font-bold text-blue-600 mb-1">💡 Your Insight</p>
-            <p className="text-xs text-blue-700 leading-relaxed">
+          <div className="mt-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+            <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">💡 Your Insight</p>
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
               {offers > 0
                 ? `🎉 You converted ${offers} application${offers>1?'s':''} to offers — ${Math.round((offers/total)*100)}% offer rate!`
                 : interviews > 0

@@ -19,7 +19,7 @@ function Settings({ statuses, setStatuses, thresholds, setThresholds }) {
     threshold:     true,
     profile:       true,
     notifications: true,
-    contact:       false,
+    contact:       true,
   })
 
   function toggleSection(key) {

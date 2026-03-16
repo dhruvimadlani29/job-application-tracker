@@ -13,7 +13,6 @@ function NotificationBanner({ applications }) {
     localStorage.getItem('notificationBannerDismissed') === 'true'
   )
 
-  // Check and fire notifications when applications load
   useEffect(() => {
     if (permission === 'granted') {
       checkAndNotify(applications)
@@ -31,45 +30,47 @@ function NotificationBanner({ applications }) {
     localStorage.setItem('notificationBannerDismissed', 'true')
   }
 
-  // Already granted — show nothing
-  if (permission === 'granted') return null
-
-  // Denied — show nothing (can't ask again)
-  if (permission === 'denied') return null
-
-  // Unsupported browser
+  if (permission === 'granted')     return null
+  if (permission === 'denied')      return null
   if (permission === 'unsupported') return null
-
-  // Already dismissed
-  if (dismissed) return null
+  if (dismissed)                    return null
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4 mb-6 flex items-center justify-between gap-4">
+    <div className="bg-blue-50 dark:bg-blue-900/20
+      border border-blue-200 dark:border-blue-800
+      rounded-2xl px-5 py-4 mb-6 flex items-center justify-between gap-4">
+
       <div className="flex items-center gap-3">
         <span className="text-2xl flex-shrink-0">🔔</span>
         <div>
-          <p className="text-sm font-bold text-blue-800">
+          <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
             Enable Notifications
           </p>
-          <p className="text-xs text-blue-600 mt-0.5">
+          <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
             Get reminders for upcoming deadlines, interviews, and follow-up suggestions
           </p>
         </div>
       </div>
+
       <div className="flex items-center gap-2 flex-shrink-0">
         <button
           onClick={handleEnable}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white
+            font-semibold text-xs px-4 py-2 rounded-xl transition-colors"
         >
           Enable
         </button>
         <button
           onClick={handleDismiss}
-          className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-500 font-semibold text-xs px-4 py-2 rounded-xl transition-colors"
+          className="bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600
+            border border-gray-200 dark:border-gray-600
+            text-gray-500 dark:text-gray-300
+            font-semibold text-xs px-4 py-2 rounded-xl transition-colors"
         >
           Not Now
         </button>
       </div>
+
     </div>
   )
 }
